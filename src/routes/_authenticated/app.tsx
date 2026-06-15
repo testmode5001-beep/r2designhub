@@ -139,6 +139,7 @@ function AppPage() {
             stats={stats}
             filtro={filtro}
             setFiltro={setFiltro}
+            onOpen={(id: string) => navigate({ to: "/pedido/$id", params: { id } })}
           />
         )}
         {tab === "novo" && canCreate && (
@@ -157,7 +158,7 @@ function StatusBadge({ s }: { s: Status }) {
   return <span className={`inline-block px-2 py-[3px] rounded-[12px] text-[10px] font-extrabold tracking-[0.03em] ${info.cls}`}>{info.label}</span>;
 }
 
-function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro }: any) {
+function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, onOpen }: any) {
   return (
     <>
       <div className="grid grid-cols-3 gap-2 mb-[14px]">
@@ -195,7 +196,7 @@ function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro }: any) {
       ) : (
         <div className="space-y-2">
           {pedidos.map((p: any) => (
-            <div key={p.id} className={`bg-card rounded-[14px] py-[13px] px-[15px] cursor-pointer hover:opacity-80 border-l-[3px] ${
+            <div key={p.id} onClick={() => onOpen(p.id)} className={`bg-card rounded-[14px] py-[13px] px-[15px] cursor-pointer hover:opacity-80 border-l-[3px] ${
               p.status === "revisao" ? "border-l-destructive" :
               p.status === "aprovada" ? "border-l-[color:var(--success)]" :
               p.status === "cliche" ? "border-l-[color:var(--warning)]" :
