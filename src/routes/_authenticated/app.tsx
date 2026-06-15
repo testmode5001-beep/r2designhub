@@ -196,7 +196,7 @@ function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, onOpen }: a
       ) : (
         <div className="space-y-2">
           {pedidos.map((p: any) => (
-            <div key={p.id} className={`bg-card rounded-[14px] py-[13px] px-[15px] cursor-pointer hover:opacity-80 border-l-[3px] ${
+            <div key={p.id} onClick={() => onOpen(p.id)} className={`bg-card rounded-[14px] py-[13px] px-[15px] cursor-pointer hover:opacity-80 border-l-[3px] ${
               p.status === "revisao" ? "border-l-destructive" :
               p.status === "aprovada" ? "border-l-[color:var(--success)]" :
               p.status === "cliche" ? "border-l-[color:var(--warning)]" :
