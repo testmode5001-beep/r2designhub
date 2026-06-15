@@ -158,7 +158,7 @@ function StatusBadge({ s }: { s: Status }) {
   return <span className={`inline-block px-2 py-[3px] rounded-[12px] text-[10px] font-extrabold tracking-[0.03em] ${info.cls}`}>{info.label}</span>;
 }
 
-function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro }: any) {
+function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, onOpen }: any) {
   return (
     <>
       <div className="grid grid-cols-3 gap-2 mb-[14px]">
