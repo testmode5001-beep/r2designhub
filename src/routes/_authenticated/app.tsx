@@ -139,6 +139,7 @@ function AppPage() {
             stats={stats}
             filtro={filtro}
             setFiltro={setFiltro}
+            onOpen={(id: string) => navigate({ to: "/pedido/$id", params: { id } })}
           />
         )}
         {tab === "novo" && canCreate && (
