@@ -52,7 +52,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Vendas x Design — R2 Flexo" },
-      { name: "description", content: "Sistema de solicitação de artes para etiquetas e rótulos" },
+      { name: "description", content: "R2 Design Hub" },
       { name: "theme-color", content: "#252425" },
     ],
     links: [
