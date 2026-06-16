@@ -128,6 +128,9 @@ function AppPage() {
         {canCreate && (
           <button onClick={() => setTab("novo")} className={`px-3 py-2 text-xs font-semibold whitespace-nowrap border-b-[2.5px] transition ${tab === "novo" ? "text-foreground border-foreground" : "text-muted-foreground border-transparent"}`}>+ Nova</button>
         )}
+        {profile.role === "gestor" && (
+          <button onClick={() => navigate({ to: "/usuarios" })} className="px-3 py-2 text-xs font-semibold whitespace-nowrap border-b-[2.5px] border-transparent text-muted-foreground hover:text-foreground transition">Usuários</button>
+        )}
       </div>
 
       {/* Content */}
