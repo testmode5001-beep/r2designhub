@@ -57,7 +57,7 @@ function AuthPage() {
           <LogoR2 />
           <div>
             <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Vendas x Design</div>
-            <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1]">Solicitação de Arte</div>
+            <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1]">R2 Design Hub</div>
           </div>
         </div>
       </div>
