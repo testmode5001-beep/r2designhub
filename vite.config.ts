@@ -10,4 +10,5 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  nitro: true,  // <-- força o Nitro a rodar fora do ambiente Lovable
 });
