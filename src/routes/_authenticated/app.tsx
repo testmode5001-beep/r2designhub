@@ -104,13 +104,10 @@ function AppPage() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-[18px] pt-[18px]">
-        <div className="flex items-center gap-[10px] min-w-0">
-          <LogoR2 />
-          <div className="min-w-0">
-            <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Vendas x Design</div>
-            <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">
-              {tab === "pedidos" ? "Pedidos" : "Nova solicitação"}
-            </div>
+        <div className="min-w-0">
+          <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Vendas x Design</div>
+          <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">
+            {tab === "pedidos" ? "Pedidos" : "Nova solicitação"}
           </div>
         </div>
         <div className="flex items-center gap-[6px] bg-card rounded-[20px] py-1 pl-[6px] pr-[10px] shrink-0" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.09)" }}>
