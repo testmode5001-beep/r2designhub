@@ -341,17 +341,32 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
         </Field>
       </Card>
 
-      <Card title="Arquivo da faca" icon="ti-file-upload">
-        <Label>PDF da faca *</Label>
+      <Card title="Anexos" icon="ti-paperclip">
+        <Label>Arquivos (PDF, imagens) *</Label>
         <label className="block border-2 border-dashed border-border rounded-[10px] p-4 text-center cursor-pointer hover:border-foreground relative">
-          <input type="file" accept=".pdf" onChange={(e) => setFaca(e.target.files?.[0] ?? null)} className="absolute inset-0 opacity-0 cursor-pointer" />
-          <i className="ti ti-file-type-pdf text-2xl text-muted-foreground block mb-1"></i>
-          {faca ? (
-            <p className="text-xs font-bold text-[color:var(--success)]">✓ {faca.name}</p>
-          ) : (
-            <p className="text-xs text-muted-foreground">Clique para anexar o PDF da faca</p>
-          )}
+          <input
+            type="file"
+            accept=".pdf,image/*"
+            multiple
+            onChange={(e) => { addFiles(e.target.files); e.currentTarget.value = ""; }}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+          />
+          <i className="ti ti-cloud-upload text-2xl text-muted-foreground block mb-1"></i>
+          <p className="text-xs text-muted-foreground">Clique para anexar arquivos (faca, referências, fotos...)</p>
         </label>
+        {anexos.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {anexos.map((file, i) => (
+              <li key={i} className="flex items-center gap-2 bg-background border border-border rounded-[8px] px-2 py-1 text-[12px]">
+                <i className="ti ti-file"></i>
+                <span className="flex-1 truncate">{file.name}</span>
+                <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive" aria-label="Remover">
+                  <i className="ti ti-x"></i>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       <div className="mt-3">
