@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { LogoR2 } from "@/components/Logo";
+
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Pedidos — Vendas x Design" }] }),
@@ -104,13 +104,10 @@ function AppPage() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-[18px] pt-[18px]">
-        <div className="flex items-center gap-[10px] min-w-0">
-          <LogoR2 />
-          <div className="min-w-0">
-            <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Vendas x Design</div>
-            <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">
-              {tab === "pedidos" ? "Pedidos" : "Nova solicitação"}
-            </div>
+        <div className="min-w-0">
+          <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Vendas x Design</div>
+          <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">
+            {tab === "pedidos" ? "Pedidos" : "Nova solicitação"}
           </div>
         </div>
         <div className="flex items-center gap-[6px] bg-card rounded-[20px] py-1 pl-[6px] pr-[10px] shrink-0" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.09)" }}>
@@ -228,13 +225,13 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
     cliente: "", materia: "", larg_materia: "", largura: "", altura: "",
     forma: "GAP", cores: "", cores_desc: "", descricao: "", link_ref: "",
   });
-  const [faca, setFaca] = useState<File | null>(null);
+  const [anexos, setAnexos] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
 
   const fields = [
     ["cliente", f.cliente], ["materia", f.materia], ["larg_materia", f.larg_materia],
     ["largura", f.largura], ["altura", f.altura], ["forma", f.forma],
-    ["cores", f.cores], ["descricao", f.descricao], ["faca", faca ? "ok" : ""],
+    ["cores", f.cores], ["descricao", f.descricao], ["anexos", anexos.length ? "ok" : ""],
   ];
   const completed = fields.filter(([_, v]) => v).length;
   const progress = Math.round((completed / fields.length) * 100);
@@ -242,19 +239,16 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
 
   function setF1<K extends keyof typeof f>(k: K, v: string) { setF((s) => ({ ...s, [k]: v })); }
 
+  function addFiles(list: FileList | null) {
+    if (!list) return;
+    setAnexos((prev) => [...prev, ...Array.from(list)]);
+  }
+  function removeFile(i: number) { setAnexos((p) => p.filter((_, idx) => idx !== i)); }
+
   async function submit() {
     if (!valid) { toast.error("Preencha todos os campos obrigatórios"); return; }
     setSending(true);
     try {
-      let faca_url: string | null = null;
-      let faca_nome: string | null = null;
-      if (faca) {
-        const path = `${userId}/${Date.now()}-${faca.name}`;
-        const { error: upErr } = await supabase.storage.from("anexos").upload(path, faca);
-        if (upErr) throw upErr;
-        faca_url = path;
-        faca_nome = faca.name;
-      }
       const { data: ped, error } = await supabase.from("pedidos").insert({
         vendedor_id: userId,
         cliente: f.cliente,
@@ -267,14 +261,25 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
         cores_desc: f.cores_desc || null,
         descricao: f.descricao,
         link_ref: f.link_ref || null,
-        faca_url, faca_nome,
         status: "nova",
       }).select("id").single();
       if (error) throw error;
+
+      // Upload anexos
+      for (const file of anexos) {
+        const path = `${ped.id}/${Date.now()}-${file.name}`;
+        const { error: upErr } = await supabase.storage.from("anexos").upload(path, file);
+        if (upErr) throw upErr;
+        const { error: insErr } = await supabase.from("pedido_anexos").insert({
+          pedido_id: ped.id, user_id: userId, nome: file.name, tipo: "anexo", url: path,
+        });
+        if (insErr) throw insErr;
+      }
+
       await supabase.from("pedido_historico").insert({ pedido_id: ped.id, user_id: userId, status: "nova", observacao: "Pedido criado" });
       toast.success("Solicitação enviada!");
       setF({ cliente: "", materia: "", larg_materia: "", largura: "", altura: "", forma: "GAP", cores: "", cores_desc: "", descricao: "", link_ref: "" });
-      setFaca(null);
+      setAnexos([]);
       onDone();
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao enviar");
@@ -336,17 +341,32 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
         </Field>
       </Card>
 
-      <Card title="Arquivo da faca" icon="ti-file-upload">
-        <Label>PDF da faca *</Label>
+      <Card title="Anexos" icon="ti-paperclip">
+        <Label>Arquivos (PDF, imagens) *</Label>
         <label className="block border-2 border-dashed border-border rounded-[10px] p-4 text-center cursor-pointer hover:border-foreground relative">
-          <input type="file" accept=".pdf" onChange={(e) => setFaca(e.target.files?.[0] ?? null)} className="absolute inset-0 opacity-0 cursor-pointer" />
-          <i className="ti ti-file-type-pdf text-2xl text-muted-foreground block mb-1"></i>
-          {faca ? (
-            <p className="text-xs font-bold text-[color:var(--success)]">✓ {faca.name}</p>
-          ) : (
-            <p className="text-xs text-muted-foreground">Clique para anexar o PDF da faca</p>
-          )}
+          <input
+            type="file"
+            accept=".pdf,image/*"
+            multiple
+            onChange={(e) => { addFiles(e.target.files); e.currentTarget.value = ""; }}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+          />
+          <i className="ti ti-cloud-upload text-2xl text-muted-foreground block mb-1"></i>
+          <p className="text-xs text-muted-foreground">Clique para anexar arquivos (faca, referências, fotos...)</p>
         </label>
+        {anexos.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {anexos.map((file, i) => (
+              <li key={i} className="flex items-center gap-2 bg-background border border-border rounded-[8px] px-2 py-1 text-[12px]">
+                <i className="ti ti-file"></i>
+                <span className="flex-1 truncate">{file.name}</span>
+                <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive" aria-label="Remover">
+                  <i className="ti ti-x"></i>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       <div className="mt-3">

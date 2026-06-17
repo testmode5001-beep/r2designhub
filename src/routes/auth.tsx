@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { LogoR2 } from "@/components/Logo";
+
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -53,12 +53,9 @@ function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="px-[18px] max-w-[440px] mx-auto w-full">
-        <div className="flex items-center gap-[10px] mb-7 pt-3">
-          <LogoR2 />
-          <div>
-            <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Vendas x Design</div>
-            <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1]">R2 Design Hub</div>
-          </div>
+        <div className="mb-7 pt-3">
+          <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Vendas x Design</div>
+          <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1]">R2 Design Hub</div>
         </div>
       </div>
       <div className="flex-1 flex flex-col justify-center px-[18px] py-6 max-w-[440px] mx-auto w-full">

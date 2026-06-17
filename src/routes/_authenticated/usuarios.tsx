@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { LogoR2 } from "@/components/Logo";
+
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   head: () => ({ meta: [{ title: "Usuários — Vendas x Design" }] }),
@@ -75,7 +75,6 @@ function UsuariosPage() {
           <button onClick={() => navigate({ to: "/app" })} className="p-1.5 rounded-lg hover:bg-card -ml-1.5" aria-label="Voltar">
             <i className="ti ti-arrow-left text-xl"></i>
           </button>
-          <LogoR2 size={44} />
           <div className="min-w-0">
             <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Equipe</div>
             <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">Usuários</div>
