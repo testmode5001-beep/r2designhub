@@ -150,12 +150,9 @@ function PedidoDetail() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex items-center justify-between px-[18px] pt-[18px]">
-        <div className="flex items-center gap-[10px] min-w-0">
-          <LogoR2 />
-          <div className="min-w-0">
-            <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Pedido #{pedido.numero}</div>
-            <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">{pedido.cliente}</div>
-          </div>
+        <div className="min-w-0">
+          <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Pedido #{pedido.numero}</div>
+          <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">{pedido.cliente}</div>
         </div>
         <button onClick={() => navigate({ to: "/app" })} className="text-xs font-semibold bg-card rounded-full px-3 py-[6px]" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.09)" }}>
           <i className="ti ti-arrow-left mr-1"></i>Voltar
