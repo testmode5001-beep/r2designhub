@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -227,6 +227,7 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
   });
   const [anexos, setAnexos] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fields = [
     ["cliente", f.cliente], ["materia", f.materia], ["larg_materia", f.larg_materia],
@@ -341,33 +342,38 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
         </Field>
       </Card>
 
-      <Card title="Anexos" icon="ti-paperclip">
-        <Label>Arquivos (PDF, imagens) *</Label>
-       <label className="block border-2 border-dashed border-border rounded-[10px] p-4 text-center cursor-pointer hover:border-foreground">
+<Card title="Anexos" icon="ti-paperclip">
+  <Label>Arquivos (PDF, imagens) *</Label>
   <input
+    ref={fileInputRef}
     type="file"
     accept=".pdf,image/*"
     multiple
     onChange={(e) => { addFiles(e.target.files); e.currentTarget.value = ""; }}
     className="hidden"
   />
-  <i className="ti ti-cloud-upload text-2xl text-muted-foreground block mb-1"></i>
-  <p className="text-xs text-muted-foreground">Clique para anexar arquivos (faca, referências, fotos...)</p>
-        </label>
-        {anexos.length > 0 && (
-          <ul className="mt-2 space-y-1">
-            {anexos.map((file, i) => (
-              <li key={i} className="flex items-center gap-2 bg-background border border-border rounded-[8px] px-2 py-1 text-[12px]">
-                <i className="ti ti-file"></i>
-                <span className="flex-1 truncate">{file.name}</span>
-                <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive" aria-label="Remover">
-                  <i className="ti ti-x"></i>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+  <button
+    type="button"
+    onClick={() => fileInputRef.current?.click()}
+    className="w-full block border-2 border-dashed border-border rounded-[10px] p-4 text-center cursor-pointer hover:border-foreground bg-transparent"
+  >
+    <i className="ti ti-cloud-upload text-2xl text-muted-foreground block mb-1"></i>
+    <p className="text-xs text-muted-foreground">Clique para anexar arquivos (faca, referências, fotos...)</p>
+  </button>
+  {anexos.length > 0 && (
+    <ul className="mt-2 space-y-1">
+      {anexos.map((file, i) => (
+        <li key={i} className="flex items-center gap-2 bg-background border border-border rounded-[8px] px-2 py-1 text-[12px]">
+          <i className="ti ti-file"></i>
+          <span className="flex-1 truncate">{file.name}</span>
+          <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive" aria-label="Remover">
+            <i className="ti ti-x"></i>
+          </button>
+        </li>
+      ))}
+    </ul>
+  )}
+</Card>
 
       <div className="mt-3">
         <div className="h-[3px] bg-border rounded-sm mb-3 overflow-hidden">
