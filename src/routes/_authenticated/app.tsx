@@ -240,10 +240,12 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
 
   function setF1<K extends keyof typeof f>(k: K, v: string) { setF((s) => ({ ...s, [k]: v })); }
 
-  function addFiles(list: FileList | null) {
-    if (!list) return;
-    setAnexos((prev) => [...prev, ...Array.from(list)]);
-  }
+function addFiles(list: FileList | null) {
+  if (!list || list.length === 0) return;
+  const files = Array.from(list); // captura ANTES de qualquer reset
+  setAnexos((prev) => [...prev, ...files]);
+}
+
   function removeFile(i: number) { setAnexos((p) => p.filter((_, idx) => idx !== i)); }
 
   async function submit() {
@@ -344,14 +346,18 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
 
 <Card title="Anexos" icon="ti-paperclip">
   <Label>Arquivos (PDF, imagens) *</Label>
-  <input
-    ref={fileInputRef}
-    type="file"
-    accept=".pdf,image/*"
-    multiple
-    onChange={(e) => { addFiles(e.target.files); e.currentTarget.value = ""; }}
-    className="hidden"
-  />
+ <input
+  ref={fileInputRef}
+  type="file"
+  accept=".pdf,image/*"
+  multiple
+  onChange={(e) => {
+    addFiles(e.target.files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }}
+  className="hidden"
+/>
+
   <button
     type="button"
     onClick={() => fileInputRef.current?.click()}
