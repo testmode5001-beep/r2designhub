@@ -225,13 +225,13 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
     cliente: "", materia: "", larg_materia: "", largura: "", altura: "",
     forma: "GAP", cores: "", cores_desc: "", descricao: "", link_ref: "",
   });
-  const [faca, setFaca] = useState<File | null>(null);
+  const [anexos, setAnexos] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
 
   const fields = [
     ["cliente", f.cliente], ["materia", f.materia], ["larg_materia", f.larg_materia],
     ["largura", f.largura], ["altura", f.altura], ["forma", f.forma],
-    ["cores", f.cores], ["descricao", f.descricao], ["faca", faca ? "ok" : ""],
+    ["cores", f.cores], ["descricao", f.descricao], ["anexos", anexos.length ? "ok" : ""],
   ];
   const completed = fields.filter(([_, v]) => v).length;
   const progress = Math.round((completed / fields.length) * 100);
@@ -239,19 +239,16 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
 
   function setF1<K extends keyof typeof f>(k: K, v: string) { setF((s) => ({ ...s, [k]: v })); }
 
+  function addFiles(list: FileList | null) {
+    if (!list) return;
+    setAnexos((prev) => [...prev, ...Array.from(list)]);
+  }
+  function removeFile(i: number) { setAnexos((p) => p.filter((_, idx) => idx !== i)); }
+
   async function submit() {
     if (!valid) { toast.error("Preencha todos os campos obrigatórios"); return; }
     setSending(true);
     try {
-      let faca_url: string | null = null;
-      let faca_nome: string | null = null;
-      if (faca) {
-        const path = `${userId}/${Date.now()}-${faca.name}`;
-        const { error: upErr } = await supabase.storage.from("anexos").upload(path, faca);
-        if (upErr) throw upErr;
-        faca_url = path;
-        faca_nome = faca.name;
-      }
       const { data: ped, error } = await supabase.from("pedidos").insert({
         vendedor_id: userId,
         cliente: f.cliente,
@@ -264,14 +261,25 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
         cores_desc: f.cores_desc || null,
         descricao: f.descricao,
         link_ref: f.link_ref || null,
-        faca_url, faca_nome,
         status: "nova",
       }).select("id").single();
       if (error) throw error;
+
+      // Upload anexos
+      for (const file of anexos) {
+        const path = `${ped.id}/${Date.now()}-${file.name}`;
+        const { error: upErr } = await supabase.storage.from("anexos").upload(path, file);
+        if (upErr) throw upErr;
+        const { error: insErr } = await supabase.from("pedido_anexos").insert({
+          pedido_id: ped.id, user_id: userId, nome: file.name, tipo: "anexo", url: path,
+        });
+        if (insErr) throw insErr;
+      }
+
       await supabase.from("pedido_historico").insert({ pedido_id: ped.id, user_id: userId, status: "nova", observacao: "Pedido criado" });
       toast.success("Solicitação enviada!");
       setF({ cliente: "", materia: "", larg_materia: "", largura: "", altura: "", forma: "GAP", cores: "", cores_desc: "", descricao: "", link_ref: "" });
-      setFaca(null);
+      setAnexos([]);
       onDone();
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao enviar");
