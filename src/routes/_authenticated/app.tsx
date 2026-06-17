@@ -268,7 +268,7 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
       // Upload anexos
       for (const file of anexos) {
         const path = `${ped.id}/${Date.now()}-${file.name}`;
-        const { error: upErr } = await supabase.storage.from("anexos").upload(path, file);
+        const { error: upErr } = await supabase.storage.from("pedido-anexos").upload(path, file);
         if (upErr) throw upErr;
         const { error: insErr } = await supabase.from("pedido_anexos").insert({
           pedido_id: ped.id, user_id: userId, nome: file.name, tipo: "anexo", url: path,
