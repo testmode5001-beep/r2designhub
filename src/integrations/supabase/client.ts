@@ -12,7 +12,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
-}
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 
