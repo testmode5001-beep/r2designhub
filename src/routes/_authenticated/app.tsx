@@ -103,7 +103,7 @@ function AppPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-[18px] pt-[18px]">
+      <div className="max-w-[680px] w-full mx-auto flex items-center justify-between px-[18px] pt-[18px]">
         <div className="min-w-0">
           <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Vendas x Design</div>
           <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">
@@ -120,7 +120,7 @@ function AppPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex px-[18px] pt-[10px] gap-[2px] overflow-x-auto">
+      <div className="max-w-[680px] w-full mx-auto flex px-[18px] pt-[10px] gap-[2px] overflow-x-auto">
         <button onClick={() => setTab("pedidos")} className={`px-3 py-2 text-xs font-semibold whitespace-nowrap border-b-[2.5px] transition ${tab === "pedidos" ? "text-foreground border-foreground" : "text-muted-foreground border-transparent"}`}>Pedidos</button>
         {canCreate && (
           <button onClick={() => setTab("novo")} className={`px-3 py-2 text-xs font-semibold whitespace-nowrap border-b-[2.5px] transition ${tab === "novo" ? "text-foreground border-foreground" : "text-muted-foreground border-transparent"}`}>+ Nova</button>
