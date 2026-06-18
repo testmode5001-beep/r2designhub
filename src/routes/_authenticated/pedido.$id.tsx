@@ -134,9 +134,19 @@ function PedidoDetail() {
   }
 
   async function openAnexo(url: string) {
+    // Tenta URL assinada primeiro
     const { data, error } = await supabase.storage.from("pedido-anexos").createSignedUrl(url, 60 * 10);
-    if (error) { toast.error(error.message); return; }
-    window.open(data.signedUrl, "_blank");
+    if (!error && data?.signedUrl) {
+      window.open(data.signedUrl, "_blank");
+      return;
+    }
+    // Fallback: URL pública
+    const { data: pub } = supabase.storage.from("pedido-anexos").getPublicUrl(url);
+    if (pub?.publicUrl) {
+      window.open(pub.publicUrl, "_blank");
+      return;
+    }
+    toast.error("Não foi possível abrir o arquivo. Verifique as permissões do bucket.");
   }
 
   if (!profile || !pedido) {
@@ -149,7 +159,7 @@ function PedidoDetail() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex items-center justify-between px-[18px] pt-[18px]">
+      <div className="max-w-[680px] w-full mx-auto flex items-center justify-between px-[18px] pt-[18px]">
         <div className="min-w-0">
           <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Pedido #{pedido.numero}</div>
           <div className="font-display text-[18px] font-extrabold tracking-[-0.4px] leading-[1.1] truncate">{pedido.cliente}</div>
