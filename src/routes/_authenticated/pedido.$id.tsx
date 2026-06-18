@@ -123,7 +123,7 @@ function PedidoDetail() {
   async function uploadArte(file: File) {
     if (!profile) return;
     const path = `${id}/${Date.now()}-${file.name}`;
-    const { error: upErr } = await supabase.storage.from("anexos").upload(path, file);
+    const { error: upErr } = await supabase.storage.from("pedido-anexos").upload(path, file);
     if (upErr) { toast.error(upErr.message); return; }
     const { error } = await supabase.from("pedido_anexos").insert({
       pedido_id: id, user_id: profile.id, nome: file.name, tipo: "arte", url: path,
@@ -134,7 +134,7 @@ function PedidoDetail() {
   }
 
   async function openAnexo(url: string) {
-    const { data, error } = await supabase.storage.from("anexos").createSignedUrl(url, 60 * 10);
+    const { data, error } = await supabase.storage.from("pedido-anexos").createSignedUrl(url, 60 * 10);
     if (error) { toast.error(error.message); return; }
     window.open(data.signedUrl, "_blank");
   }
