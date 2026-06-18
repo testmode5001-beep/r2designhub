@@ -264,10 +264,18 @@ function ActionPanel({ status, isDesigner, isVendedor, onChange }: {
   onChange: (s: Status, obs: string) => void;
 }) {
   const [obs, setObs] = useState("");
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   function act(s: Status) {
+    if (s === "cancelado") { setShowCancelConfirm(true); return; }
     onChange(s, obs);
     setObs("");
+  }
+
+  function confirmCancel() {
+    onChange("cancelado", obs);
+    setObs("");
+    setShowCancelConfirm(false);
   }
 
   const designerActions: { s: Status; label: string; icon: string; show: boolean }[] = [
@@ -314,6 +322,33 @@ function ActionPanel({ status, isDesigner, isVendedor, onChange }: {
           </button>
         ))}
       </div>
+
+      {/* Modal confirmação cancelamento */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-card rounded-[18px] p-6 w-full max-w-[320px]" style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}>
+            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center mb-3 mx-auto">
+              <i className="ti ti-alert-triangle text-destructive text-xl"></i>
+            </div>
+            <h2 className="font-display text-[17px] font-extrabold text-center mb-1">Cancelar pedido?</h2>
+            <p className="text-[12px] text-muted-foreground text-center mb-5">Esta ação não pode ser desfeita. Tem certeza que deseja cancelar este pedido?</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 rounded-[10px] py-2 px-3 text-[13px] font-bold bg-background border-[1.5px] border-border"
+              >
+                Não, voltar
+              </button>
+              <button
+                onClick={confirmCancel}
+                className="flex-1 rounded-[10px] py-2 px-3 text-[13px] font-bold bg-destructive text-white"
+              >
+                Sim, cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
