@@ -134,7 +134,7 @@ function AppPage() {
       <div className="px-[18px] py-[14px] flex-1 max-w-[680px] w-full mx-auto pb-8">
         {tab === "pedidos" && (
           <PedidosList
-            function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setBusca, onOpen }: any) {
+        
             isLoading={isLoading}
             pedidos={filtered}
             stats={stats}
@@ -159,7 +159,7 @@ function StatusBadge({ s }: { s: Status }) {
   return <span className={`inline-block px-2 py-[3px] rounded-[12px] text-[10px] font-extrabold tracking-[0.03em] ${info.cls}`}>{info.label}</span>;
 }
 
-function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, onOpen }: any) {
+function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setBusca, onOpen }: any) {
   return (
     <>
       <div className="grid grid-cols-3 gap-2 mb-[14px]">
