@@ -92,7 +92,7 @@ function AppPage() {
     return { total, ativos, concl };
   }, [pedidos]);
 
-const filtered = useMemo(() => {
+  const filtered = useMemo(() => {
     let list = filtro === "todos" ? pedidos : pedidos.filter((p: any) => p.status === filtro);
     if (busca?.trim()) {
       const q = busca.toLowerCase();
@@ -107,16 +107,14 @@ const filtered = useMemo(() => {
     }
     return list;
   }, [pedidos, filtro, busca]);
-  return list;
-}, [pedidos, filtro, busca]);
 
   if (!profile) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando...</div>;
   }
 
-  const canCreate = profile.role === "vendedora" || profile.role === "gestor";  // ← linha que já existe
+  const canCreate = profile.role === "vendedora" || profile.role === "gestor";
 
-  async function deletePedido(id: string) {      // ← adiciona aqui, antes do return
+  async function deletePedido(id: string) {
     await supabase.from("pedido_anexos").delete().eq("pedido_id", id);
     await supabase.from("pedido_historico").delete().eq("pedido_id", id);
     await supabase.from("pedidos").delete().eq("id", id);
@@ -124,10 +122,6 @@ const filtered = useMemo(() => {
     qc.invalidateQueries({ queryKey: ["pedidos"] });
     toast.success("Pedido apagado.");
   }
-
-  return (   // ← linha que já existe
-
-  const canCreate = profile.role === "vendedora" || profile.role === "gestor";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -163,7 +157,6 @@ const filtered = useMemo(() => {
       <div className="px-[18px] py-[14px] flex-1 max-w-[680px] w-full mx-auto pb-8">
         {tab === "pedidos" && (
           <PedidosList
-        
             isLoading={isLoading}
             pedidos={filtered}
             stats={stats}
@@ -183,9 +176,6 @@ const filtered = useMemo(() => {
             onDone={() => { setTab("pedidos"); qc.invalidateQueries({ queryKey: ["pedidos"] }); }}
           />
         )}
-      </div>
-
-      )}
       </div>
 
       {/* Modal confirmar apagar */}
@@ -216,10 +206,6 @@ const filtered = useMemo(() => {
         <EditModal pedido={editando} onClose={() => setEditando(null)} onSaved={() => { setEditando(null); qc.invalidateQueries({ queryKey: ["pedidos"] }); }} />
       )}
 
-    </div>
-  );
-}
-      
     </div>
   );
 }
@@ -258,20 +244,20 @@ function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setB
       </div>
 
       <div className="relative mb-3">
-  <i className="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[14px]"></i>
-  <input
-    value={busca}
-    onChange={(e) => setBusca(e.target.value)}
-    placeholder="Buscar por cliente, material, medidas..."
-    className="w-full bg-card rounded-[10px] pl-8 pr-3 py-[9px] text-[13px] border border-border focus:outline-none focus:border-foreground"
-    style={{ boxShadow: "0 1px 0 rgba(0,0,0,0.04)" }}
-  />
-  {busca && (
-    <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-      <i className="ti ti-x text-[13px]"></i>
-    </button>
-  )}
-</div>
+        <i className="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[14px]"></i>
+        <input
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por cliente, material, medidas..."
+          className="w-full bg-card rounded-[10px] pl-8 pr-3 py-[9px] text-[13px] border border-border focus:outline-none focus:border-foreground"
+          style={{ boxShadow: "0 1px 0 rgba(0,0,0,0.04)" }}
+        />
+        {busca && (
+          <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <i className="ti ti-x text-[13px]"></i>
+          </button>
+        )}
+      </div>
 
       {isLoading ? (
         <div className="text-center text-muted-foreground py-12">Carregando...</div>
@@ -327,11 +313,11 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
 
   function setF1<K extends keyof typeof f>(k: K, v: string) { setF((s) => ({ ...s, [k]: v })); }
 
-function addFiles(list: FileList | null) {
-  if (!list || list.length === 0) return;
-  const files = Array.from(list); // captura ANTES de qualquer reset
-  setAnexos((prev) => [...prev, ...files]);
-}
+  function addFiles(list: FileList | null) {
+    if (!list || list.length === 0) return;
+    const files = Array.from(list); // captura ANTES de qualquer reset
+    setAnexos((prev) => [...prev, ...files]);
+  }
 
   function removeFile(i: number) { setAnexos((p) => p.filter((_, idx) => idx !== i)); }
 
@@ -431,42 +417,42 @@ function addFiles(list: FileList | null) {
         </Field>
       </Card>
 
-<Card title="Anexos" icon="ti-paperclip">
-  <Label>Arquivos (PDF, imagens) *</Label>
- <input
-  ref={fileInputRef}
-  type="file"
-  accept=".pdf,image/*"
-  multiple
-  onChange={(e) => {
-    addFiles(e.target.files);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }}
-  className="hidden"
-/>
+      <Card title="Anexos" icon="ti-paperclip">
+        <Label>Arquivos (PDF, imagens) *</Label>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,image/*"
+          multiple
+          onChange={(e) => {
+            addFiles(e.target.files);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+          }}
+          className="hidden"
+        />
 
-  <button
-    type="button"
-    onClick={() => fileInputRef.current?.click()}
-    className="w-full block border-2 border-dashed border-border rounded-[10px] p-4 text-center cursor-pointer hover:border-foreground bg-transparent"
-  >
-    <i className="ti ti-cloud-upload text-2xl text-muted-foreground block mb-1"></i>
-    <p className="text-xs text-muted-foreground">Clique para anexar arquivos (faca, referências, fotos...)</p>
-  </button>
-  {anexos.length > 0 && (
-    <ul className="mt-2 space-y-1">
-      {anexos.map((file, i) => (
-        <li key={i} className="flex items-center gap-2 bg-background border border-border rounded-[8px] px-2 py-1 text-[12px]">
-          <i className="ti ti-file"></i>
-          <span className="flex-1 truncate">{file.name}</span>
-          <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive" aria-label="Remover">
-            <i className="ti ti-x"></i>
-          </button>
-        </li>
-      ))}
-    </ul>
-  )}
-</Card>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full block border-2 border-dashed border-border rounded-[10px] p-4 text-center cursor-pointer hover:border-foreground bg-transparent"
+        >
+          <i className="ti ti-cloud-upload text-2xl text-muted-foreground block mb-1"></i>
+          <p className="text-xs text-muted-foreground">Clique para anexar arquivos (faca, referências, fotos...)</p>
+        </button>
+        {anexos.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {anexos.map((file, i) => (
+              <li key={i} className="flex items-center gap-2 bg-background border border-border rounded-[8px] px-2 py-1 text-[12px]">
+                <i className="ti ti-file"></i>
+                <span className="flex-1 truncate">{file.name}</span>
+                <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive" aria-label="Remover">
+                  <i className="ti ti-x"></i>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       <div className="mt-3">
         <div className="h-[3px] bg-border rounded-sm mb-3 overflow-hidden">
