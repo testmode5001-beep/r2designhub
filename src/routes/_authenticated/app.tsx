@@ -35,6 +35,8 @@ function AppPage() {
   const [tab, setTab] = useState<"pedidos" | "novo">("pedidos");
   const [profile, setProfile] = useState<{ id: string; nome: string; role: Role } | null>(null);
   const [filtro, setFiltro] = useState<Status | "todos">("todos");
+  const [editando, setEditando] = useState<any | null>(null);
+  const [deletando, setDeletando] = useState<any | null>(null);
   const [busca, setBusca] = useState("");
 
   // Load current user profile + role
@@ -110,6 +112,19 @@ function AppPage() {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando...</div>;
   }
 
+  const canCreate = profile.role === "vendedora" || profile.role === "gestor";  // ← linha que já existe
+
+  async function deletePedido(id: string) {      // ← adiciona aqui, antes do return
+    await supabase.from("pedido_anexos").delete().eq("pedido_id", id);
+    await supabase.from("pedido_historico").delete().eq("pedido_id", id);
+    await supabase.from("pedidos").delete().eq("id", id);
+    setDeletando(null);
+    qc.invalidateQueries({ queryKey: ["pedidos"] });
+    toast.success("Pedido apagado.");
+  }
+
+  return (   // ← linha que já existe
+
   const canCreate = profile.role === "vendedora" || profile.role === "gestor";
 
   return (
@@ -154,6 +169,9 @@ function AppPage() {
             setFiltro={setFiltro}
             busca={busca}
             setBusca={setBusca}
+            isGestor={profile.role === "gestor"}
+            onEdit={(p: any) => setEditando(p)}
+            onDelete={(p: any) => setDeletando(p)}
             onOpen={(id: string) => navigate({ to: "/pedido/$id", params: { id } })}
           />
         )}
@@ -164,6 +182,42 @@ function AppPage() {
           />
         )}
       </div>
+
+      )}
+      </div>
+
+      {/* Modal confirmar apagar */}
+      {deletando && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-card rounded-[18px] p-6 w-full max-w-[320px]" style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}>
+            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center mb-3 mx-auto">
+              <i className="ti ti-trash text-destructive text-xl"></i>
+            </div>
+            <h2 className="font-display text-[17px] font-extrabold text-center mb-1">Apagar pedido?</h2>
+            <p className="text-[12px] text-muted-foreground text-center mb-5">
+              Pedido <strong>#{deletando.numero} — {deletando.cliente}</strong> será removido permanentemente.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeletando(null)} className="flex-1 rounded-[10px] py-2 px-3 text-[13px] font-bold bg-background border-[1.5px] border-border">
+                Cancelar
+              </button>
+              <button onClick={() => deletePedido(deletando.id)} className="flex-1 rounded-[10px] py-2 px-3 text-[13px] font-bold bg-destructive text-white">
+                Apagar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal editar pedido */}
+      {editando && (
+        <EditModal pedido={editando} onClose={() => setEditando(null)} onSaved={() => { setEditando(null); qc.invalidateQueries({ queryKey: ["pedidos"] }); }} />
+      )}
+
+    </div>
+  );
+}
+      
     </div>
   );
 }
