@@ -146,27 +146,20 @@ function PedidoDetail() {
     qc.invalidateQueries({ queryKey: ["pedido-anexos", id] });
   }
 
-  async function openAnexo(url: string) {
-    // Tenta URL assinada primeiro
-    const { data, error } = await supabase.storage.from("pedido-anexos").createSignedUrl(url, 60 * 10);
-    if (!error && data?.signedUrl) {
-      window.open(data.signedUrl, "_blank");
-      return;
-    }
-    // Fallback: URL pública
-    const { data: pub } = supabase.storage.from("pedido-anexos").getPublicUrl(url);
-    if (pub?.publicUrl) {
-      window.open(pub.publicUrl, "_blank");
-      return;
-    }
-    toast.error("Não foi possível abrir o arquivo. Verifique as permissões do bucket.");
+ async function openAnexo(url: string) {
+  const { data } = supabase.storage.from("pedido-anexos").getPublicUrl(url);
+  if (data?.publicUrl) {
+    window.open(data.publicUrl, "_blank");
+  } else {
+    toast.error("Não foi possível abrir o arquivo.");
   }
+}
 
 async function downloadAnexo(url: string, nome: string) {
-  const { data, error } = await supabase.storage.from("pedido-anexos").createSignedUrl(url, 60 * 10);
-  if (error || !data?.signedUrl) { toast.error("Erro ao baixar arquivo."); return; }
+  const { data } = supabase.storage.from("pedido-anexos").getPublicUrl(url);
+  if (!data?.publicUrl) { toast.error("Erro ao baixar arquivo."); return; }
   const a = document.createElement("a");
-  a.href = data.signedUrl;
+  a.href = data.publicUrl;
   a.download = nome;
   a.click();
 }
