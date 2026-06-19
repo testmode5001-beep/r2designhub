@@ -149,6 +149,15 @@ function PedidoDetail() {
     toast.error("Não foi possível abrir o arquivo. Verifique as permissões do bucket.");
   }
 
+async function downloadAnexo(url: string, nome: string) {
+  const { data, error } = await supabase.storage.from("pedido-anexos").createSignedUrl(url, 60 * 10);
+  if (error || !data?.signedUrl) { toast.error("Erro ao baixar arquivo."); return; }
+  const a = document.createElement("a");
+  a.href = data.signedUrl;
+  a.download = nome;
+  a.click();
+}
+  
   if (!profile || !pedido) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando...</div>;
   }
