@@ -218,7 +218,10 @@ async function downloadAnexo(url: string, nome: string) {
                 <div className="text-[12px] font-bold truncate">Faca</div>
                 <div className="text-[10px] text-muted-foreground truncate">{pedido.faca_nome}</div>
               </div>
-              <i className="ti ti-external-link text-muted-foreground"></i>
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+  <button onClick={() => openAnexo(pedido.faca_url!)} className="p-1 text-muted-foreground hover:text-foreground"><i className="ti ti-external-link text-base"></i></button>
+  <button onClick={() => downloadAnexo(pedido.faca_url!, pedido.faca_nome ?? "faca")} className="p-1 text-muted-foreground hover:text-foreground"><i className="ti ti-download text-base"></i></button>
+</div>
             </button>
           )}
 
@@ -229,7 +232,10 @@ async function downloadAnexo(url: string, nome: string) {
                 <div className="text-[12px] font-bold truncate">{a.tipo === "arte" ? "Arte" : a.tipo}</div>
                 <div className="text-[10px] text-muted-foreground truncate">{a.nome} · {fmtDate(a.created_at)}</div>
               </div>
-              <i className="ti ti-external-link text-muted-foreground"></i>
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+  <button onClick={() => openAnexo(a.url)} className="p-1 text-muted-foreground hover:text-foreground"><i className="ti ti-external-link text-base"></i></button>
+  <button onClick={() => downloadAnexo(a.url, a.nome)} className="p-1 text-muted-foreground hover:text-foreground"><i className="ti ti-download text-base"></i></button>
+</div>
             </button>
           ))}
 
