@@ -295,18 +295,17 @@ function ActionPanel({ status, isDesigner, isVendedor, onChange }: {
   onChange: (s: Status, obs: string) => void;
 }) {
   const [obs, setObs] = useState("");
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [confirm, setConfirm] = useState<{ s: Status; label: string } | null>(null);
 
-  function act(s: Status) {
-    if (s === "cancelado") { setShowCancelConfirm(true); return; }
-    onChange(s, obs);
-    setObs("");
+  function act(s: Status, label: string) {
+    setConfirm({ s, label });
   }
 
-  function confirmCancel() {
-    onChange("cancelado", obs);
+  function confirmAct() {
+    if (!confirm) return;
+    onChange(confirm.s, obs);
     setObs("");
-    setShowCancelConfirm(false);
+    setConfirm(null);
   }
 
   const designerActions: { s: Status; label: string; icon: string; show: boolean }[] = [
@@ -342,7 +341,7 @@ function ActionPanel({ status, isDesigner, isVendedor, onChange }: {
         {actions.map((a) => (
           <button
             key={a.s}
-            onClick={() => act(a.s)}
+            onClick={() => act(a.s, a.label)}
             className={`rounded-[10px] py-2 px-3 text-[12px] font-bold flex items-center justify-center gap-2 ${
               a.s === "cancelado" ? "bg-destructive text-white" :
               a.s === "revisao" ? "bg-background border-[1.5px] border-destructive text-destructive" :
@@ -354,27 +353,35 @@ function ActionPanel({ status, isDesigner, isVendedor, onChange }: {
         ))}
       </div>
 
-      {/* Modal confirmação cancelamento */}
-      {showCancelConfirm && (
+      {/* Modal de confirmação universal */}
+      {confirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-card rounded-[18px] p-6 w-full max-w-[320px]" style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}>
-            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center mb-3 mx-auto">
-              <i className="ti ti-alert-triangle text-destructive text-xl"></i>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 mx-auto ${confirm.s === "cancelado" ? "bg-destructive/10" : "bg-foreground/10"}`}>
+              <i className={`ti text-xl ${
+                confirm.s === "cancelado" ? "ti-alert-triangle text-destructive" :
+                confirm.s === "aprovada" ? "ti-thumb-up text-foreground" :
+                confirm.s === "concluido" ? "ti-check text-foreground" :
+                confirm.s === "revisao" ? "ti-refresh text-destructive" :
+                "ti-help text-foreground"
+              }`}></i>
             </div>
-            <h2 className="font-display text-[17px] font-extrabold text-center mb-1">Cancelar pedido?</h2>
-            <p className="text-[12px] text-muted-foreground text-center mb-5">Esta ação não pode ser desfeita. Tem certeza que deseja cancelar este pedido?</p>
+            <h2 className="font-display text-[17px] font-extrabold text-center mb-1">{confirm.label}?</h2>
+            <p className="text-[12px] text-muted-foreground text-center mb-5">
+              Tem certeza que deseja executar esta ação?
+            </p>
             <div className="flex gap-2">
               <button
-                onClick={() => setShowCancelConfirm(false)}
+                onClick={() => setConfirm(null)}
                 className="flex-1 rounded-[10px] py-2 px-3 text-[13px] font-bold bg-background border-[1.5px] border-border"
               >
                 Não, voltar
               </button>
               <button
-                onClick={confirmCancel}
-                className="flex-1 rounded-[10px] py-2 px-3 text-[13px] font-bold bg-destructive text-white"
+                onClick={confirmAct}
+                className={`flex-1 rounded-[10px] py-2 px-3 text-[13px] font-bold ${confirm.s === "cancelado" || confirm.s === "revisao" ? "bg-destructive text-white" : "bg-foreground text-yellow"}`}
               >
-                Sim, cancelar
+                Sim, confirmar
               </button>
             </div>
           </div>
