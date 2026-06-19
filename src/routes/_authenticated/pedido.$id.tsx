@@ -90,8 +90,21 @@ function PedidoDetail() {
     if (!profile) return;
     const ch = supabase
       .channel(`pedido-${id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "pedidos", filter: `id=eq.${id}` }, () => {
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "pedidos", filter: `id=eq.${id}` }, (payload) => {
         qc.invalidateQueries({ queryKey: ["pedido", id] });
+        if (profile?.role === "vendedora") {
+          const novo = payload.new as any;
+          const statusLabels: Record<string, string> = {
+            nova: "Nova", criacao: "Em criação", aguardando: "Aguardando aprovação",
+            revisao: "Revisão solicitada", aprovada: "Arte aprovada",
+            cliche: "Clichê solicitado", concluido: "Concluído", cancelado: "Cancelado",
+          };
+          toast(`Pedido atualizado`, {
+            description: `Status alterado para: ${statusLabels[novo.status] ?? novo.status}`,
+            icon: "🔄",
+            duration: 6000,
+          });
+        }
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "pedido_historico", filter: `pedido_id=eq.${id}` }, () => {
         qc.invalidateQueries({ queryKey: ["pedido-historico", id] });
