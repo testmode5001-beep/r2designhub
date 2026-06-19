@@ -35,6 +35,7 @@ function AppPage() {
   const [tab, setTab] = useState<"pedidos" | "novo">("pedidos");
   const [profile, setProfile] = useState<{ id: string; nome: string; role: Role } | null>(null);
   const [filtro, setFiltro] = useState<Status | "todos">("todos");
+  const [busca, setBusca] = useState("");
 
   // Load current user profile + role
   useEffect(() => {
@@ -90,9 +91,20 @@ function AppPage() {
   }, [pedidos]);
 
   const filtered = useMemo(() => {
-    if (filtro === "todos") return pedidos;
-    return pedidos.filter((p: any) => p.status === filtro);
-  }, [pedidos, filtro]);
+  let list = filtro === "todos" ? pedidos : pedidos.filter((p: any) => p.status === filtro);
+  if (busca?.trim()) {
+    const q = busca.toLowerCase();
+    list = list.filter((p: any) =>
+      p.cliente?.toLowerCase().includes(q) ||
+      p.materia?.toLowerCase().includes(q) ||
+      p.largura?.toString().includes(q) ||
+      p.altura?.toString().includes(q) ||
+      p.cores?.toString().includes(q) ||
+      p.numero?.toString().includes(q)
+    );
+  }
+  return list;
+}, [pedidos, filtro, busca]);
 
   if (!profile) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando...</div>;
@@ -140,6 +152,8 @@ function AppPage() {
             stats={stats}
             filtro={filtro}
             setFiltro={setFiltro}
+            busca={busca}
+            setBusca={setBusca}
             onOpen={(id: string) => navigate({ to: "/pedido/$id", params: { id } })}
           />
         )}
@@ -186,6 +200,22 @@ function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setB
           </button>
         ))}
       </div>
+
+      <div className="relative mb-3">
+  <i className="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[14px]"></i>
+  <input
+    value={busca}
+    onChange={(e) => setBusca(e.target.value)}
+    placeholder="Buscar por cliente, material, medidas..."
+    className="w-full bg-card rounded-[10px] pl-8 pr-3 py-[9px] text-[13px] border border-border focus:outline-none focus:border-foreground"
+    style={{ boxShadow: "0 1px 0 rgba(0,0,0,0.04)" }}
+  />
+  {busca && (
+    <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+      <i className="ti ti-x text-[13px]"></i>
+    </button>
+  )}
+</div>
 
       {isLoading ? (
         <div className="text-center text-muted-foreground py-12">Carregando...</div>
