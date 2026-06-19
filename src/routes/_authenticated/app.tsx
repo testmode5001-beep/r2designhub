@@ -67,16 +67,35 @@ function AppPage() {
   });
 
   // Realtime subscription
-  useEffect(() => {
-    if (!profile) return;
-    const channel = supabase
-      .channel("pedidos-rt")
-      .on("postgres_changes", { event: "*", schema: "public", table: "pedidos" }, () => {
-        qc.invalidateQueries({ queryKey: ["pedidos"] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [profile, qc]);
+.on("postgres_changes", { event: "UPDATE", schema: "public", table: "pedidos", filter: `id=eq.${id}` }, (payload) => {
+  qc.invalidateQueries({ queryKey: ["pedido", id] });
+  // Notifica vendedora sobre mudança de status
+  if (profile.role === "vendedora") {
+    const novo = payload.new as any;
+    const statusLabels: Record<string, string> = {
+      criacao: "Em criação",
+      aguardando: "Aguardando aprovação",
+      revisao: "Revisão solicitada",
+      aprovada: "Arte aprovada",
+      cliche: "Clichê solicitado",
+      concluido: "Concluído",
+      cancelado: "Cancelado",
+    };
+    toast(t) => (
+      <div className={`bg-card rounded-[14px] px-4 py-3 flex items-start gap-3 shadow-lg border border-border ${t.visible ? "animate-enter" : "animate-leave"}`}>
+        <div className="w-8 h-8 rounded-full bg-foreground flex items-center justify-center shrink-0">
+          <i className="ti ti-refresh-alert text-yellow text-sm"></i>
+        </div>
+        <div>
+          <div className="text-[13px] font-bold">Pedido atualizado</div>
+          <div className="text-[11px] text-muted-foreground">
+            {pedido?.cliente} → {statusLabels[novo.status] ?? novo.status}
+          </div>
+        </div>
+      </div>
+    ), { duration: 6000 });
+  }
+})
 
   async function doLogout() {
     await qc.cancelQueries();
