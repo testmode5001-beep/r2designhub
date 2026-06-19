@@ -92,19 +92,21 @@ function AppPage() {
     return { total, ativos, concl };
   }, [pedidos]);
 
-  const filtered = useMemo(() => {
-  let list = filtro === "todos" ? pedidos : pedidos.filter((p: any) => p.status === filtro);
-  if (busca?.trim()) {
-    const q = busca.toLowerCase();
-    list = list.filter((p: any) =>
-      p.cliente?.toLowerCase().includes(q) ||
-      p.materia?.toLowerCase().includes(q) ||
-      p.largura?.toString().includes(q) ||
-      p.altura?.toString().includes(q) ||
-      p.cores?.toString().includes(q) ||
-      p.numero?.toString().includes(q)
-    );
-  }
+const filtered = useMemo(() => {
+    let list = filtro === "todos" ? pedidos : pedidos.filter((p: any) => p.status === filtro);
+    if (busca?.trim()) {
+      const q = busca.toLowerCase();
+      list = list.filter((p: any) =>
+        p.cliente?.toLowerCase().includes(q) ||
+        p.materia?.toLowerCase().includes(q) ||
+        p.largura?.toString().includes(q) ||
+        p.altura?.toString().includes(q) ||
+        p.cores?.toString().includes(q) ||
+        p.numero?.toString().includes(q)
+      );
+    }
+    return list;
+  }, [pedidos, filtro, busca]);
   return list;
 }, [pedidos, filtro, busca]);
 
