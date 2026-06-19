@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Pedidos — Vendas x Design" }] }),
   component: AppPage,
@@ -57,6 +56,14 @@ function AppPage() {
     queryKey: ["pedidos"],
     queryFn: async () => {
       const { data, error } = await supabase
+        .from("pedidos")
+        .select("id,numero,cliente,materia,largura,altura,cores,status,vendedor_id,created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!profile,
+  });
 
   // Realtime
   useEffect(() => {
@@ -148,9 +155,6 @@ function AppPage() {
         {canCreate && (
           <button onClick={() => setTab("novo")} className={`px-3 py-2 text-xs font-semibold whitespace-nowrap border-b-[2.5px] transition ${tab === "novo" ? "text-foreground border-foreground" : "text-muted-foreground border-transparent"}`}>+ Nova</button>
         )}
-        {profile.role === "gestor" && (
-          <button onClick={() => navigate({ to: "/usuarios" })} className="px-3 py-2 text-xs font-semibold whitespace-nowrap border-b-[2.5px] border-transparent text-muted-foreground hover:text-foreground transition">Usuários</button>
-        )}
       </div>
 
       {/* Content */}
@@ -215,7 +219,7 @@ function StatusBadge({ s }: { s: Status }) {
   return <span className={`inline-block px-2 py-[3px] rounded-[12px] text-[10px] font-extrabold tracking-[0.03em] ${info.cls}`}>{info.label}</span>;
 }
 
-function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setBusca, onOpen }: any) {
+function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setBusca, isGestor, onEdit, onDelete, onOpen }: any) {
   return (
     <>
       <div className="grid grid-cols-3 gap-2 mb-[14px]">
@@ -277,7 +281,19 @@ function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setB
             }`} style={{ boxShadow: "0 1px 0 rgba(0,0,0,0.04),0 16px 32px -24px rgba(0,0,0,0.22)" }}>
               <div className="flex justify-between items-start mb-1">
                 <div className="text-sm font-bold">{p.cliente}</div>
-                <StatusBadge s={p.status} />
+                <div className="flex items-center gap-1">
+                  <StatusBadge s={p.status} />
+                  {isGestor && (
+                    <div className="flex gap-1 ml-1" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={() => onEdit(p)} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground">
+                        <i className="ti ti-pencil text-[12px]"></i>
+                      </button>
+                      <button onClick={() => onDelete(p)} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                        <i className="ti ti-trash text-[12px]"></i>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="text-[11px] text-muted-foreground flex flex-wrap gap-2 mt-1">
                 <span>#{p.numero}</span>
@@ -290,6 +306,76 @@ function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setB
         </div>
       )}
     </>
+  );
+}
+
+function EditModal({ pedido, onClose, onSaved }: { pedido: any; onClose: () => void; onSaved: () => void }) {
+  const [f, setF] = useState({
+    cliente: pedido.cliente ?? "",
+    materia: pedido.materia ?? "",
+    larg_materia: pedido.larg_materia ?? "",
+    largura: pedido.largura ?? "",
+    altura: pedido.altura ?? "",
+    forma: pedido.forma ?? "GAP",
+    cores: pedido.cores ?? "",
+    cores_desc: pedido.cores_desc ?? "",
+    descricao: pedido.descricao ?? "",
+    link_ref: pedido.link_ref ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    const { error } = await supabase.from("pedidos").update({ ...f }).eq("id", pedido.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Pedido atualizado.");
+    onSaved();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-0 sm:px-4">
+      <div className="bg-card w-full sm:max-w-[500px] rounded-t-[24px] sm:rounded-[18px] p-5 max-h-[90vh] overflow-y-auto" style={{ boxShadow: "0 -4px 40px rgba(0,0,0,0.18)" }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-[17px] font-extrabold">Editar #{pedido.numero}</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><i className="ti ti-x text-lg"></i></button>
+        </div>
+        <div className="space-y-3">
+          {[
+            { k: "cliente", label: "Cliente" },
+            { k: "larg_materia", label: "Largura MP (mm)" },
+            { k: "largura", label: "Largura etiqueta (mm)" },
+            { k: "altura", label: "Altura etiqueta (mm)" },
+            { k: "cores_desc", label: "Descrição das cores" },
+            { k: "descricao", label: "Briefing" },
+            { k: "link_ref", label: "Link referência" },
+          ].map(({ k, label }) => (
+            <div key={k}>
+              <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1">{label}</div>
+              <input value={(f as any)[k]} onChange={(e) => setF((s) => ({ ...s, [k]: e.target.value }))} className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-[13px] focus:outline-none focus:border-foreground" />
+            </div>
+          ))}
+          <div>
+            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1">Material</div>
+            <Chips options={MATERIAS} value={f.materia} onChange={(v) => setF((s) => ({ ...s, materia: v }))} />
+          </div>
+          <div>
+            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1">Formato</div>
+            <Chips options={FORMAS} value={f.forma} onChange={(v) => setF((s) => ({ ...s, forma: v }))} />
+          </div>
+          <div>
+            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1">Cores</div>
+            <Chips options={CORES_OPTS} value={f.cores} onChange={(v) => setF((s) => ({ ...s, cores: v }))} />
+          </div>
+        </div>
+        <div className="flex gap-2 mt-5">
+          <button onClick={onClose} className="flex-1 rounded-[10px] py-2 text-[13px] font-bold bg-background border border-border">Cancelar</button>
+          <button onClick={save} disabled={saving} className="flex-1 rounded-[10px] py-2 text-[13px] font-bold bg-foreground text-yellow">
+            {saving ? "Salvando..." : "Salvar alterações"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -315,7 +401,7 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
 
   function addFiles(list: FileList | null) {
     if (!list || list.length === 0) return;
-    const files = Array.from(list); // captura ANTES de qualquer reset
+    const files = Array.from(list);
     setAnexos((prev) => [...prev, ...files]);
   }
 
@@ -341,7 +427,6 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
       }).select("id").single();
       if (error) throw error;
 
-      // Upload anexos
       for (const file of anexos) {
         const path = `${ped.id}/${Date.now()}-${file.name}`;
         const { error: upErr } = await supabase.storage.from("pedido-anexos").upload(path, file);
@@ -430,7 +515,6 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
           }}
           className="hidden"
         />
-
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
@@ -445,7 +529,7 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
               <li key={i} className="flex items-center gap-2 bg-background border border-border rounded-[8px] px-2 py-1 text-[12px]">
                 <i className="ti ti-file"></i>
                 <span className="flex-1 truncate">{file.name}</span>
-                <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive" aria-label="Remover">
+                <button type="button" onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive">
                   <i className="ti ti-x"></i>
                 </button>
               </li>
