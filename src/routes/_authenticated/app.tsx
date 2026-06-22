@@ -77,13 +77,18 @@ function AppPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "pedidos" }, (payload) => {
         qc.invalidateQueries({ queryKey: ["pedidos"] });
         if (profile.role === "designer" && payload.eventType === "INSERT") {
-          const p = payload.new as any;
-          toast(`Nova solicitação: ${p.cliente}`, {
-            description: `${p.materia} · ${p.largura}×${p.altura}mm`,
-            icon: "🔔",
-            duration: 6000,
-          });
-        }
+  const p = payload.new as any;
+  toast(`Nova solicitação: ${p.cliente}`, {
+    description: `${p.materia} · ${p.largura}×${p.altura}mm`,
+    icon: "🔔",
+    duration: 6000,
+  });
+  sendLocalNotification(
+    "Nova solicitação",
+    `${p.cliente} — ${p.materia} ${p.largura}×${p.altura}mm`,
+    "/app"
+  );
+}
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
