@@ -385,7 +385,7 @@ function EditModal({ pedido, onClose, onSaved }: { pedido: any; onClose: () => v
 function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
   const [f, setF] = useState({
     cliente: "", materia: "", larg_materia: "", largura: "", altura: "",
-    forma: "GAP", cores: "", cores_desc: "", descricao: "", link_ref: "",
+    forma: "GAP", cores: "", cores_desc: "", descricao: "", link_ref: "", carreiras: ""
   });
   const [anexos, setAnexos] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
@@ -394,7 +394,7 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
   const fields = [
     ["cliente", f.cliente], ["materia", f.materia], ["larg_materia", f.larg_materia],
     ["largura", f.largura], ["altura", f.altura], ["forma", f.forma],
-    ["cores", f.cores], ["descricao", f.descricao], ["anexos", anexos.length ? "ok" : ""],
+    ["cores", f.cores], ["descricao", f.descricao], ["carreiras", f.carreiras], ["anexos", anexos.length ? "ok" : ""],
   ];
   const completed = fields.filter(([_, v]) => v).length;
   const progress = Math.round((completed / fields.length) * 100);
@@ -425,6 +425,7 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
         cores: f.cores,
         cores_desc: f.cores_desc || null,
         descricao: f.descricao,
+        carreiras: f.carreiras,
         link_ref: f.link_ref || null,
         status: "nova",
       }).select("id").single();
@@ -442,7 +443,7 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
 
       await supabase.from("pedido_historico").insert({ pedido_id: ped.id, user_id: userId, status: "nova", observacao: "Pedido criado" });
       toast.success("Solicitação enviada!");
-      setF({ cliente: "", materia: "", larg_materia: "", largura: "", altura: "", forma: "GAP", cores: "", cores_desc: "", descricao: "", link_ref: "" });
+      setF({ cliente: "", materia: "", larg_materia: "", largura: "", altura: "", forma: "GAP", cores: "", cores_desc: "", descricao: "", link_ref: "", carreiras: ""  });
       setAnexos([]);
       onDone();
     } catch (err: any) {
