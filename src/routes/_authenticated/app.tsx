@@ -441,7 +441,11 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
       if (error) throw error;
 
       for (const file of anexos) {
-        const path = `${ped.id}/${Date.now()}-${file.name}`;
+        const safeName = file.name
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-zA-Z0-9.\-_]/g, "_");
+const path = `${ped.id}/${Date.now()}-${safeName}`;
         const { error: upErr } = await supabase.storage.from("pedido-anexos").upload(path, file);
         if (upErr) throw upErr;
         const { error: insErr } = await supabase.from("pedido_anexos").insert({
