@@ -1,3 +1,4 @@
+import { requestNotificationPermission, registerServiceWorker, sendLocalNotification } from "@/lib/notifications";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -48,6 +49,9 @@ function AppPage() {
         supabase.from("user_roles").select("role").eq("user_id", u.user.id).limit(1).maybeSingle(),
       ]);
       setProfile({ id: u.user.id, nome: p?.nome ?? u.user.email ?? "Usuário", role: (r?.role as Role) ?? "vendedora" });
+      // Pedir permissão de notificação
+      await registerServiceWorker();
+      await requestNotificationPermission();
     })();
   }, []);
 
