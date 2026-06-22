@@ -99,11 +99,19 @@ function PedidoDetail() {
             revisao: "Revisão solicitada", aprovada: "Arte aprovada",
             cliche: "Clichê solicitado", concluido: "Concluído", cancelado: "Cancelado",
           };
-          toast(`Pedido atualizado`, {
+          toast (`Pedido atualizado`, {
             description: `Status alterado para: ${statusLabels[novo.status] ?? novo.status}`,
             icon: "🔄",
-            duration: 6000,
-          });
+            duration: 6000, import { sendLocalNotification } from "@/lib/notifications";
+
+// dentro do .on UPDATE:
+sendLocalNotification(
+  "Pedido atualizado",
+  `${pedido?.cliente} → ${statusLabels[novo.status] ?? novo.status}`,
+  `/pedido/${id}`
+);
+            
+          }); 
         }
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "pedido_historico", filter: `pedido_id=eq.${id}` }, () => {
