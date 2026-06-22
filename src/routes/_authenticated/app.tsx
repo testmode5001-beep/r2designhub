@@ -478,9 +478,14 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
           </Field>
         </div>
         <Label>Formato *</Label>
-        <Chips options={FORMAS} value={f.forma} onChange={(v) => setF1("forma", v)} />
+      <Chips options={FORMAS} value={f.forma} onChange={(v) => setF1("forma", v)} />
+        <div className="mt-3">
+          <Field label="Quantidade de carreiras" required>
+            <input value={f.carreiras} onChange={(e) => setF1("carreiras", e.target.value)} placeholder="Ex.: 2" className="inp" />
+          </Field>
+        </div>
       </Card>
-
+      
       <Card title="Cores de impressão" icon="ti-droplet">
         <Label>Número de cores *</Label>
         <div className="grid grid-cols-3 gap-[6px] mb-2">
