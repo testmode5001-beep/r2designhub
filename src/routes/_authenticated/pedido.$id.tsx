@@ -144,7 +144,11 @@ sendLocalNotification(
 
   async function uploadArte(file: File) {
     if (!profile) return;
-    const path = `${id}/${Date.now()}-${file.name}`;
+    const safeName = file.name
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-zA-Z0-9.\-_]/g, "_");
+const path = `${id}/${Date.now()}-${safeName}`;
     const { error: upErr } = await supabase.storage.from("pedido-anexos").upload(path, file);
     if (upErr) { toast.error(upErr.message); return; }
     const { error } = await supabase.from("pedido_anexos").insert({
