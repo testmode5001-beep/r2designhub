@@ -394,7 +394,7 @@ function NovoForm({ userId, onDone }: { userId: string; onDone: () => void }) {
   const fields = [
     ["cliente", f.cliente], ["materia", f.materia], ["larg_materia", f.larg_materia],
     ["largura", f.largura], ["altura", f.altura], ["forma", f.forma],
-    ["cores", f.cores], ["descricao", f.descricao], ["carreiras", f.carreiras], ["anexos", anexos.length ? "ok" : ""],
+    ["cores", f.cores], ["descricao", f.descricao], ["carreiras", f.carreiras],
   ];
   const completed = fields.filter(([_, v]) => v).length;
   const progress = Math.round((completed / fields.length) * 100);
