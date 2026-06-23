@@ -69,26 +69,49 @@ function AppPage() {
     enabled: !!profile,
   });
 
-  // Realtime
+// Realtime
   useEffect(() => {
     if (!profile) return;
     const channel = supabase
       .channel("pedidos-rt")
       .on("postgres_changes", { event: "*", schema: "public", table: "pedidos" }, (payload) => {
         qc.invalidateQueries({ queryKey: ["pedidos"] });
-        if (profile.role === "designer" && payload.eventType === "INSERT") {
-  const p = payload.new as any;
-  toast(`Nova solicitação: ${p.cliente}`, {
-    description: `${p.materia} · ${p.largura}×${p.altura}mm`,
-    icon: "🔔",
-    duration: 6000,
-  });
-  sendLocalNotification(
-    "Nova solicitação",
-    `${p.cliente} — ${p.materia} ${p.largura}×${p.altura}mm`,
-    "/app"
-  );
-}
+
+        const statusLabels: Record<string, string> = {
+          nova: "Nova", criacao: "Em criação", aguardando: "Aguardando aprovação",
+          revisao: "Revisão solicitada", aprovada: "Arte aprovada",
+          cliche: "Clichê solicitado", concluido: "Concluído", cancelado: "Cancelado",
+        };
+
+        // Novo pedido → notifica designer e gestor
+        if (payload.eventType === "INSERT" && (profile.role === "designer" || profile.role === "gestor")) {
+          const p = payload.new as any;
+          toast(`Nova solicitação: ${p.cliente}`, {
+            description: `${p.materia} · ${p.largura}×${p.altura}mm`,
+            icon: "🔔",
+            duration: 6000,
+          });
+          sendLocalNotification(
+            "Nova solicitação",
+            `${p.cliente} — ${p.materia} ${p.largura}×${p.altura}mm`,
+            "/app"
+          );
+        }
+
+        // Mudança de status → notifica gestor
+        if (payload.eventType === "UPDATE" && profile.role === "gestor" || profile.role === "designer" || profile.role === "vendedora") {
+          const p = payload.new as any;
+          toast(`Pedido atualizado`, {
+            description: `${p.cliente} → ${statusLabels[p.status] ?? p.status}`,
+            icon: "🔄",
+            duration: 6000,
+          });
+          sendLocalNotification(
+            "Pedido atualizado",
+            `${p.cliente} → ${statusLabels[p.status] ?? p.status}`,
+            "/app"
+          );
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
