@@ -6,7 +6,9 @@ self.addEventListener("push", (event) => {
       icon: "/r2-logo.png",
       badge: "/r2-logo.png",
       vibrate: [200, 100, 200],
-      data: { url: data.url ?? "/" },
+      tag: data.tag ?? "r2-notification",
+      renotify: true,
+      data: { url: data.url ?? "/app" },
     })
   );
 });
@@ -14,6 +16,12 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow(event.notification.data?.url ?? "/")
+    clients.matchAll({ type: "window" }).then((clientList) => {
+      const url = event.notification.data?.url ?? "/app";
+      for (const client of clientList) {
+        if (client.url.includes(url) && "focus" in client) return client.focus();
+      }
+      return clients.openWindow(url);
+    })
   );
 });
