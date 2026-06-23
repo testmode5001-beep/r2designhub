@@ -1,4 +1,4 @@
-import { registerServiceWorker, subscribeToPush, sendLocalNotification } from "@/lib/notifications";
+import { registerServiceWorker, subscribeToPush } from "@/lib/notifications";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -83,7 +83,9 @@ function AppPage() {
           cliche: "Clichê solicitado", concluido: "Concluído", cancelado: "Cancelado",
         };
 
-        // Novo pedido → notifica designer e gestor
+        // Feedback visual em tela (não é o push real — esse agora é disparado
+        // pelo backend via webhook do Supabase, então funciona mesmo com o
+        // app fechado/minimizado/tela bloqueada).
         if (payload.eventType === "INSERT" && (profile.role === "designer" || profile.role === "gestor")) {
           const p = payload.new as any;
           toast(`Nova solicitação: ${p.cliente}`, {
@@ -91,28 +93,8 @@ function AppPage() {
             icon: "🔔",
             duration: 6000,
           });
-          sendLocalNotification(
-            "Nova solicitação",
-            `${p.cliente} — ${p.materia} ${p.largura}×${p.altura}mm`,
-            "/app"
-          );
-          // Push para todos mesmo com app fechado
-          const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
-          if (subs?.length) {
-            fetch("/api/notify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                subscriptions: subs.map((s: any) => s.subscription),
-                title: "Nova solicitação",
-                body: `${p.cliente} — ${p.materia} ${p.largura}×${p.altura}mm`,
-                url: "/app",
-              }),
-            });
-          }
         }
 
-        // Mudança de status → notifica todos
         if (payload.eventType === "UPDATE") {
           const p = payload.new as any;
           toast(`Pedido atualizado`, {
@@ -120,25 +102,6 @@ function AppPage() {
             icon: "🔄",
             duration: 6000,
           });
-          sendLocalNotification(
-            "Pedido atualizado",
-            `${p.cliente} → ${statusLabels[p.status] ?? p.status}`,
-            "/app"
-          );
-          // Push para todos mesmo com app fechado
-          const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
-          if (subs?.length) {
-            fetch("/api/notify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                subscriptions: subs.map((s: any) => s.subscription),
-                title: "Pedido atualizado",
-                body: `${p.cliente} → ${statusLabels[p.status] ?? p.status}`,
-                url: "/app",
-              }),
-            });
-          }
         }
       })
       .subscribe();
