@@ -74,7 +74,7 @@ function AppPage() {
     if (!profile) return;
     const channel = supabase
       .channel("pedidos-rt")
-      .on("postgres_changes", { event: "*", schema: "public", table: "pedidos" }, (payload) => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "pedidos" }, async (payload) => {
         qc.invalidateQueries({ queryKey: ["pedidos"] });
 
         const statusLabels: Record<string, string> = {
@@ -96,12 +96,24 @@ function AppPage() {
             `${p.cliente} — ${p.materia} ${p.largura}×${p.altura}mm`,
             "/app"
           );
-
-          
+          // Push para todos mesmo com app fechado
+          const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
+          if (subs?.length) {
+            fetch("/api/notify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                subscriptions: subs.map((s: any) => s.subscription),
+                title: "Nova solicitação",
+                body: `${p.cliente} — ${p.materia} ${p.largura}×${p.altura}mm`,
+                url: "/app",
+              }),
+            });
+          }
         }
 
-        // Mudança de status → notifica gestor
-        if (payload.eventType === "UPDATE" && profile.role === "gestor" || profile.role === "designer" || profile.role === "vendedora") {
+        // Mudança de status → notifica todos
+        if (payload.eventType === "UPDATE") {
           const p = payload.new as any;
           toast(`Pedido atualizado`, {
             description: `${p.cliente} → ${statusLabels[p.status] ?? p.status}`,
@@ -113,13 +125,26 @@ function AppPage() {
             `${p.cliente} → ${statusLabels[p.status] ?? p.status}`,
             "/app"
           );
+          // Push para todos mesmo com app fechado
+          const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
+          if (subs?.length) {
+            fetch("/api/notify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                subscriptions: subs.map((s: any) => s.subscription),
+                title: "Pedido atualizado",
+                body: `${p.cliente} → ${statusLabels[p.status] ?? p.status}`,
+                url: "/app",
+              }),
+            });
+          }
         }
       })
- 
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [profile, qc]);
-
+  
   async function doLogout() {
     await qc.cancelQueries();
     qc.clear();
