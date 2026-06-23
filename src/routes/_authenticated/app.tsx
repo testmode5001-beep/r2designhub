@@ -51,7 +51,7 @@ function AppPage() {
       setProfile({ id: u.user.id, nome: p?.nome ?? u.user.email ?? "Usuário", role: (r?.role as Role) ?? "vendedora" });
       // Pedir permissão de notificação
       await registerServiceWorker();
-      await requestNotificationPermission();
+      await subscribeToPush(u.user.id, supabase);
     })();
   }, []);
 
