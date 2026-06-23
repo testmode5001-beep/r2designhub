@@ -1,4 +1,4 @@
-const VAPID_PUBLIC_KEY = "SUA_PUBLIC_KEY_AQUI"; // cole a chave pública gerada
+const VAPID_PUBLIC_KEY = "BHEBrHR9uGw70FUj5qvRhFMP50gdd2DPWMjEYha8MxjAj1UOZRsMlcoxUAcxMuiJx-1vmC7rpgodthSfHUR52Uk";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
