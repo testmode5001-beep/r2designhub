@@ -1,3 +1,12 @@
+const VAPID_PUBLIC_KEY = "SUA_PUBLIC_KEY_AQUI"; // cole a chave pública gerada
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+
 export async function requestNotificationPermission(): Promise<boolean> {
   if (!("Notification" in window)) return false;
   if (Notification.permission === "granted") return true;
@@ -16,10 +25,30 @@ export async function registerServiceWorker() {
   }
 }
 
+export async function subscribeToPush(userId: string, supabase: any) {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+  const permission = await requestNotificationPermission();
+  if (!permission) return;
+
+  const reg = await navigator.serviceWorker.ready;
+  let subscription = await reg.pushManager.getSubscription();
+
+  if (!subscription) {
+    subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+  }
+
+  // Salva no Supabase
+  await supabase.from("push_subscriptions").upsert({
+    user_id: userId,
+    subscription: subscription.toJSON(),
+  }, { onConflict: "user_id" });
+}
+
 export async function sendLocalNotification(title: string, body: string, url = "/app") {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
-
-  // Mobile: usa Service Worker (obrigatório no iOS/Android)
   if ("serviceWorker" in navigator) {
     const reg = await navigator.serviceWorker.getRegistration();
     if (reg) {
@@ -33,8 +62,6 @@ export async function sendLocalNotification(title: string, body: string, url = "
       return;
     }
   }
-
-  // Desktop fallback
   const n = new Notification(title, { body, icon: "/r2-logo.png" });
   n.onclick = () => { window.focus(); n.close(); window.location.href = url; };
 }
