@@ -1,4 +1,4 @@
-import { requestNotificationPermission, registerServiceWorker, sendLocalNotification } from "@/lib/notifications";
+import { registerServiceWorker, subscribeToPush, sendLocalNotification } from "@/lib/notifications";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
