@@ -96,6 +96,8 @@ function AppPage() {
             `${p.cliente} — ${p.materia} ${p.largura}×${p.altura}mm`,
             "/app"
           );
+
+          
         }
 
         // Mudança de status → notifica gestor
@@ -113,6 +115,22 @@ function AppPage() {
           );
         }
       })
+
+      // Busca todas as subscriptions e envia push para todos
+const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
+if (subs?.length) {
+  fetch("/api/notify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      subscriptions: subs.map((s: any) => s.subscription),
+      title: "Nova solicitação", // ou "Pedido atualizado"
+      body: `${p.cliente}...`,
+      url: "/app",
+    }),
+  });
+}
+  
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [profile, qc]);
