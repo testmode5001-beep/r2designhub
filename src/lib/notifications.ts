@@ -16,17 +16,25 @@ export async function registerServiceWorker() {
   }
 }
 
-export function sendLocalNotification(title: string, body: string, url = "/app") {
-  if (Notification.permission !== "granted") return;
-  const n = new Notification(title, {
-    body,
-    icon: "/r2-logo.png",
-    badge: "/r2-logo.png",
-    silent: false,
-  });
-  n.onclick = () => {
-    window.focus();
-    n.close();
-    window.location.href = url;
-  };
+export async function sendLocalNotification(title: string, body: string, url = "/app") {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+  // Mobile: usa Service Worker (obrigatório no iOS/Android)
+  if ("serviceWorker" in navigator) {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+      await reg.showNotification(title, {
+        body,
+        icon: "/r2-logo.png",
+        badge: "/r2-logo.png",
+        vibrate: [200, 100, 200],
+        data: { url },
+      });
+      return;
+    }
+  }
+
+  // Desktop fallback
+  const n = new Notification(title, { body, icon: "/r2-logo.png" });
+  n.onclick = () => { window.focus(); n.close(); window.location.href = url; };
 }
