@@ -50,10 +50,12 @@ export async function subscribeToPush(userId: string, supabase: any) {
     console.log("[Push] Nova subscription criada:", subscription);
   }
 
-  const { error } = await supabase.from("push_subscriptions").upsert({
-    user_id: userId,
-    subscription: subscription.toJSON(),
-  }, { onConflict: "user_id" });
+  // Primeiro tenta deletar a antiga, depois insere nova
+await supabase.from("push_subscriptions").delete().eq("user_id", userId);
+const { error } = await supabase.from("push_subscriptions").insert({
+  user_id: userId,
+  subscription: subscription.toJSON(),
+});
 
   if (error) console.error("[Push] Erro ao salvar subscription:", error);
   else console.log("[Push] Subscription salva com sucesso");
