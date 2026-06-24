@@ -196,6 +196,8 @@ console.log("[Push] subscription result:", subResult);
             busca={busca}
             setBusca={setBusca}
             isGestor={profile.role === "gestor"}
+canEdit={(p: any) => profile.role === "gestor" || profile.role === "designer" || p.vendedor_id === profile.id}
+onEdit={(p: any) => setEditando(p)}
             onEdit={(p: any) => setEditando(p)}
             onDelete={(p: any) => setDeletando(p)}
             onOpen={(id: string) => navigate({ to: "/pedido/$id", params: { id } })}
@@ -246,8 +248,7 @@ function StatusBadge({ s }: { s: Status }) {
   return <span className={`inline-block px-2 py-[3px] rounded-[12px] text-[10px] font-extrabold tracking-[0.03em] ${info.cls}`}>{info.label}</span>;
 }
 
-function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setBusca, isGestor, onEdit, onDelete, onOpen }: any) {
-  return (
+function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setBusca, isGestor, canEdit, onEdit, onDelete, onOpen }: any) {
     <>
       <div className="grid grid-cols-3 gap-2 mb-[14px]">
         {[
