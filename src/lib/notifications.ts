@@ -26,25 +26,37 @@ export async function registerServiceWorker() {
 }
 
 export async function subscribeToPush(userId: string, supabase: any) {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    console.warn("[Push] ServiceWorker ou PushManager não suportado");
+    return;
+  }
   const permission = await requestNotificationPermission();
-  if (!permission) return;
+  if (!permission) {
+    console.warn("[Push] Permissão negada");
+    return;
+  }
 
   const reg = await navigator.serviceWorker.ready;
+  console.log("[Push] SW ready:", reg);
+
   let subscription = await reg.pushManager.getSubscription();
+  console.log("[Push] Subscription existente:", subscription);
 
   if (!subscription) {
     subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     });
+    console.log("[Push] Nova subscription criada:", subscription);
   }
 
-  // Salva no Supabase
-  await supabase.from("push_subscriptions").upsert({
+  const { error } = await supabase.from("push_subscriptions").upsert({
     user_id: userId,
     subscription: subscription.toJSON(),
   }, { onConflict: "user_id" });
+
+  if (error) console.error("[Push] Erro ao salvar subscription:", error);
+  else console.log("[Push] Subscription salva com sucesso");
 }
 
 export async function sendLocalNotification(title: string, body: string, url = "/app") {
