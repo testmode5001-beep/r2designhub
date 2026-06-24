@@ -311,16 +311,20 @@ function PedidosList({ isLoading, pedidos, stats, filtro, setFiltro, busca, setB
                 <div className="text-sm font-bold">{p.cliente}</div>
                 <div className="flex items-center gap-1">
                   <StatusBadge s={p.status} />
-                  {isGestor && (
-                    <div className="flex gap-1 ml-1" onClick={(e) => e.stopPropagation()}>
-                      <button onClick={() => onEdit(p)} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground">
-                        <i className="ti ti-pencil text-[12px]"></i>
-                      </button>
-                      <button onClick={() => onDelete(p)} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
-                        <i className="ti ti-trash text-[12px]"></i>
-                      </button>
-                    </div>
-                  )}
+                  {(canEdit(p) || isGestor) && (
+  <div className="flex gap-1 ml-1" onClick={(e) => e.stopPropagation()}>
+    {canEdit(p) && (
+      <button onClick={() => onEdit(p)} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground">
+        <i className="ti ti-pencil text-[12px]"></i>
+      </button>
+    )}
+    {isGestor && (
+      <button onClick={() => onDelete(p)} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+        <i className="ti ti-trash text-[12px]"></i>
+      </button>
+    )}
+  </div>
+)}
                 </div>
               </div>
               <div className="text-[11px] text-muted-foreground flex flex-wrap gap-2 mt-1">
